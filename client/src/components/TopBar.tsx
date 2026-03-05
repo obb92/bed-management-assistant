@@ -31,7 +31,7 @@ export function TopBar() {
   const occColor = statusColors[data.occupancyPct] ?? "bg-amber-500/20 text-amber-400 border-amber-500/30";
 
   return (
-    <header className="flex items-center justify-between gap-4 px-5 h-12 border-b border-white/8 bg-[#0a0f1e] shrink-0" data-testid="topbar">
+    <header className="relative z-20 flex items-center justify-between gap-4 px-5 h-12 border-b border-white/8 bg-[#0a0f1e] shrink-0" data-testid="topbar">
       <h1 className="text-white/90 font-semibold text-sm">{SCREEN_TITLES[screen] ?? ""}</h1>
 
       <div className="flex items-center gap-3">

@@ -250,7 +250,7 @@ export function DemoOverlay() {
   return (
     <>
       {/* Top banner */}
-      <div className="fixed top-0 left-0 right-0 z-[150] h-9 bg-[#0a0f1e] border-b border-white/10 flex items-center gap-4 px-4">
+      <div className="fixed top-0 left-0 right-0 z-10 h-9 bg-[#0a0f1e] border-b border-white/10 flex items-center gap-4 px-4">
         <div className="w-2 h-2 rounded-full bg-[#00d4c8] animate-pulse shrink-0" />
         <span className="text-white/70 text-xs font-medium shrink-0">Demo: {scenarioName}</span>
         <span className="text-white/40 text-xs shrink-0">Step {demoStep} of {totalSteps}</span>
