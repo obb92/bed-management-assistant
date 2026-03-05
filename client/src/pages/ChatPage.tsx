@@ -92,7 +92,7 @@ export function ChatPage() {
       const result = await res.json();
       setMessages((m) => [...m, { role: "assistant", content: result.text }]);
     } catch (err: any) {
-      setError("Unable to reach AI — check your ANTHROPIC_API_KEY in Replit Secrets.");
+      setError(err?.message && err.message !== "API error" ? err.message : "Unable to reach AI — check your VITE_ANTHROPIC_API_KEY in Replit Secrets.");
     } finally {
       setLoading(false);
     }
