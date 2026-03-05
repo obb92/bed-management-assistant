@@ -1,0 +1,377 @@
+# Replit Build Prompt — AI Bed Management Assistant
+*Qualified Health | Case Interview Prep | March 2026*
+
+---
+
+## PASTE THIS ENTIRE PROMPT INTO REPLIT AGENT
+
+---
+
+Build a single-page React application called **CareFlow** — an AI-powered bed management assistant for hospital Bed Coordinators and Charge Nurses. This is a demo-ready prototype for a case interview presentation. It must look polished, work reliably, and showcase generative AI recommendations in a real hospital operations context.
+
+---
+
+## TECH STACK
+
+- **Frontend:** React (single file or component-based, your choice — but keep it simple)
+- **Styling:** Tailwind CSS
+- **AI Layer:** Anthropic Claude API (`claude-sonnet-4-20250514`) via `fetch` calls to `https://api.anthropic.com/v1/messages`
+- **No backend required.** All data is hardcoded synthetic state. API key is injected via Replit Secrets as `ANTHROPIC_API_KEY` — read it from `process.env.ANTHROPIC_API_KEY` or `import.meta.env.VITE_ANTHROPIC_API_KEY` depending on the Replit setup.
+- **No database, no auth backend.** Login is cosmetic — clicking login proceeds directly to the app.
+
+---
+
+## DESIGN SYSTEM — QUALIFIED HEALTH BRAND
+
+Match the visual language of qualifiedhealthai.com exactly:
+
+- **Background:** Deep navy `#0a0f1e` for sidebar and header. Off-white `#f8fafc` for main content area.
+- **Accent color:** Bright teal/cyan `#00d4c8` for CTAs, active states, highlights, and AI-generated content borders.
+- **Text:** White on dark surfaces. Dark navy `#0a0f1e` on light surfaces.
+- **Typography:** Inter or system sans-serif. Bold large headlines. Generous whitespace.
+- **Cards:** White with subtle shadow on light background. Rounded corners (`rounded-xl`). Clean, no clutter.
+- **Buttons:** Primary = teal fill with navy text. Secondary = navy outline. Danger = red outline only.
+- **Status colors:** Red `#ef4444` = urgent. Amber `#f59e0b` = soon. Green `#22c55e` = informational/complete.
+- **Overall feel:** Premium enterprise SaaS. Not clinical. Not startup-flashy. Think Linear or Notion, healthcare edition.
+
+**Logo treatment:**
+- Top left of sidebar: "CareFlow" wordmark in white, with a small teal pulse/heartbeat icon to the left.
+- Directly below in smaller text: "Powered by Qualified Health" in muted teal/grey.
+- Bottom of sidebar: A placeholder "Memorial General Hospital" client logo area — grey rounded rectangle with "Memorial General Hospital" text centered in it. This simulates where a customer logo would appear.
+
+---
+
+## APP STRUCTURE
+
+### Global State
+The app holds one of two synthetic data states in memory: **TC1 (2am Crunch)** or **TC2 (Morning Surge)**. The active scenario determines all data shown across every screen. State also tracks:
+- `activePersona`: "coordinator" or "nurse"
+- `activeFloor`: "3 South" or "4 North" (only relevant when persona = nurse)
+- `activeScenario`: "TC1" or "TC2"
+- `actionCardStates`: object tracking Done/Snoozed/Flagged status of each action card
+- `demoMode`: boolean
+- `demoStep`: integer (1–6)
+
+---
+
+## SCREENS & NAVIGATION
+
+### Left Sidebar (persistent, ~220px wide)
+- Top: CareFlow logo + "Powered by Qualified Health" + client logo placeholder
+- Nav items (labeled, with icons): **Home**, **Discharges**, **Beds**, **Ask AI**
+- Active nav item: teal left border + teal text
+- Bottom of sidebar: **Demo Mode** button — teal outline, subtle. Clicking opens scenario selection modal.
+
+### Top Bar (persistent, thin ~48px)
+- Left: Current screen title (e.g., "Home")
+- Right: Persona switcher pill — shows current role ("Bed Coordinator" or "Charge Nurse — 3 South"). Clicking opens a small dropdown with options: "Bed Coordinator", "Charge Nurse — 3 South", "Charge Nurse — 4 North". Switching updates the entire app view instantly.
+- Far right: current time (static, matching the scenario time) + occupancy % badge.
+
+---
+
+## SCREEN 1: LOGIN
+
+Centered card on dark navy full-screen background.
+- CareFlow logo large at top
+- "Memorial General Hospital" subtitle
+- Username field (placeholder: "Enter your name")
+- Password field (placeholder: "Password") — cosmetic only
+- Large teal **Sign In** button — clicking proceeds to Home, defaulting to Bed Coordinator + TC1
+- Small **Demo Mode** link at bottom — opens scenario selection modal directly
+
+---
+
+## SCREEN 2: HOME
+
+Three stacked zones:
+
+### Zone A — AI Situation Briefing
+A visually distinct card with a subtle teal left border (4px) and very light teal background tint. Small "AI" badge in the top right corner of the card. A paragraph of text — hardcoded per scenario and persona (see DATA LAYER below). Timestamp in small muted text: "Last updated 2:17am" (TC1) or "Last updated 7:46am" (TC2).
+
+### Zone B — Stats Bar
+Four metric tiles in a horizontal row. Each tile: metric label small on top, large bold number in center, colored status badge below.
+
+**Coordinator stats — TC1:**
+| Metric | Value | Status |
+|---|---|---|
+| Occupancy | 94% | 🔴 Critical |
+| ED Boarders | 6 (avg 3.2hr) | 🔴 Critical |
+| Avg Turnaround | 110 min | 🟡 Elevated |
+| Discharges (2hr) | 1 expected | 🟡 Low |
+
+**Coordinator stats — TC2:**
+| Metric | Value | Status |
+|---|---|---|
+| Occupancy | 89% | 🟡 Elevated |
+| ED Boarders | 2 (avg 1.4hr) | 🟢 Normal |
+| Avg Turnaround | 98 min | 🟡 Elevated |
+| Discharges (2hr) | 5 expected | 🟢 Good |
+
+**Charge Nurse stats** (scoped to her floor only — same 4 tiles but floor-specific values):
+
+TC1 / 3 South: Occupancy 91%, Boarders N/A (hide this tile, replace with "Pending Discharges: 1"), Avg Turnaround 105 min, Discharges (2hr): 1 expected.
+
+TC2 / 4 North: Occupancy 87%, Pending Discharges: 2, Avg Turnaround 94 min, Incoming Admits: 1 tentative.
+
+### Zone C — Action Queue
+Header: "Priority Actions" with a count badge (e.g., "3").
+
+Action cards — see DATA LAYER for exact content. Each card:
+- Left edge color bar: red (urgent), amber (soon), green (informational)
+- Bold one-line title
+- 2-line rationale in muted text
+- Bottom row: owner badge (pill) + time horizon + three buttons: **Done** (green outline), **Snooze** (amber outline), **Dismiss** (grey outline) — right-aligned
+- Clicking the card body (anywhere except buttons) toggles an inline **Reasoning Drawer** below the card — shows a list of data signals with checkmarks/crosses (see DATA LAYER)
+- When **Done** is clicked: card gets a green strikethrough style and collapses. If this is a card whose completion triggers a feedback loop update (see DATA LAYER), the relevant other card updates its content visually.
+- When **Flag Blocker** is available (Nurse cards only): replaces Dismiss button. Clicking opens a small inline text input. On submit, updates the Coordinator's corresponding card content.
+
+---
+
+## SCREEN 3: DISCHARGE LIKELIHOOD LIST
+
+Full-width table. Header row: Room | Patient | Floor (Coordinator only) | Likelihood | Primary Blocker | LOS.
+
+Likelihood displayed as colored badges: **High** (green), **Medium** (amber), **Low** (grey).
+
+Each row has action buttons on the right:
+- Coordinator: no inline action (pattern is surfaced via action queue on Home)
+- Nurse (her floor only): **Confirm** (green) or **Flag** (amber) — Flag opens inline text input
+
+Top 3 rows in TC2 that share "Awaiting physician sign-off" should have a subtle amber left border to visually group the pattern. A small banner above the table in TC2 reads: *"Pattern detected: 3 of your top 5 likely discharges share the same blocker — physician sign-off. See Action Queue."*
+
+See DATA LAYER for all patient rows.
+
+---
+
+## SCREEN 4: BED STATUS BOARD
+
+Grid layout organized by floor. Each floor is a labeled section. Each bed is a square tile (~80px) with room number and a color:
+
+- 🟢 Green = Available now
+- 🟡 Amber = Dirty (awaiting housekeeping)
+- 🔵 Blue = Occupied, AI-flagged likely clear within 2hrs
+- ⬜ Grey = Occupied, no discharge expected
+- 🔴 Red = ED boarder assigned, awaiting bed
+
+Hovering a tile shows a tooltip: patient name (if occupied), status, expected time (if applicable).
+
+**One interactive moment:** In TC1, Rooms 401 and 403 on 4 North are amber (dirty). After the Coordinator marks Card 1 Done on the Home screen (housekeeping dispatch), those tiles update to a pulsing amber→green animation indicating housekeeping en route. Room 310 on 3 South is blue (AI-flagged). Once the Nurse confirms discharge, that tile transitions to green.
+
+Additionally in TC1: The Coordinator can click Room 401 (once it turns green) to open a small assignment modal — a dropdown listing ED boarders with "Assign Mr. Torres to Room 401" as the pre-selected option. Clicking **Confirm Assignment** closes the modal and updates the tile to red (assigned, incoming).
+
+---
+
+## SCREEN 5: AI CHAT
+
+Full main content area. Standard chat UI.
+- User messages: right-aligned, navy background, white text
+- AI messages: left-aligned, white card with teal left border, same styling as the situation briefing
+- Typing indicator: three animated dots while waiting for response
+- Input box pinned to bottom with send button (teal)
+
+**System prompt to pass with every message (invisible to user):**
+
+Build the system prompt dynamically based on active scenario and persona. It must include:
+
+```
+You are CareFlow, an AI bed management assistant for [PERSONA] at Memorial General Hospital. 
+You have full visibility into the current hospital state. Answer questions about bed management, 
+discharge planning, and patient flow only. Be specific — always reference actual room numbers, 
+patient names, and timing from the hospital state below. Never give generic answers. 
+Keep responses concise (3–5 sentences max unless a list is genuinely clearer).
+Do not speculate beyond the data provided. Do not give clinical advice.
+
+CURRENT HOSPITAL STATE:
+[INSERT FULL SCENARIO DATA OBJECT AS JSON]
+
+Current time: [2:15am for TC1 / 7:45am for TC2]
+Active persona: [Bed Coordinator (hospital-wide) / Charge Nurse — [FLOOR] (floor-scoped only)]
+```
+
+**For TC2 Step 6 demo:** Pre-fill the chat input with *"If 412 doesn't clear by 10:30, what are my options for the surgical admit?"* — editable but pre-populated so the presenter doesn't have to type live.
+
+---
+
+## DATA LAYER — SYNTHETIC HOSPITAL STATE
+
+### TC1 — "The 2am Crunch" (2:15am)
+
+**Hospital state:**
+- Total beds: 120 staffed
+- Occupied: 113 (94%)
+- ED boarders: 6 patients (Mr. Torres 4.1hr, Ms. Patel 3.8hr, Mr. Kim 3.2hr, Mrs. Lee 2.1hr, Mr. Davis 1.8hr, Ms. Chen 0.9hr)
+- Dirty beds: Room 401 (4 North), Room 403 (4 North)
+- Near-discharge: Mrs. Garcia, Room 310, 3 South
+
+**AI Situation Briefing — Coordinator:**
+> "As of 2:15am, the house is at 94% occupancy. You have 6 patients boarding in the ED — 3 have waited over 4 hours. One discharge on 3 South is ready to initiate right now: Room 310 (Mrs. Garcia) has labs back, family is present, and transport is the only outstanding item. Clearing her unlocks 2 ED placements within 90 minutes. Two beds on 4 North are dirty and need housekeeping before they're usable. Action queue has 3 items."
+
+**AI Situation Briefing — Charge Nurse (3 South):**
+> "As of 2:15am, 3 South is at 91% occupancy. Room 310 (Mrs. Garcia) is ready to discharge — labs returned 40 minutes ago, family is present, but transport has not been arranged. This is the only blocker. The Bed Coordinator has flagged this as the hospital's top priority right now. An ED patient is tentatively assigned to Room 310 once it clears."
+
+**Action Cards — Coordinator (TC1):**
+
+Card 1 — URGENT (red):
+- Title: "Dispatch housekeeping to Rooms 401 and 403, 4 North — both ready for turnover"
+- Rationale: "These two beds have been dirty for 47 and 52 minutes respectively. Clearing them opens capacity for 2 of the 6 ED boarders."
+- Owner: Bed Coordinator | Time: Act within 20 min
+- Reasoning drawer: "Room 401: patient discharged 12:28am ✓ | Housekeeping not notified ✗ | Room 403: patient discharged 12:23am ✓ | Housekeeping not notified ✗"
+- On Done: Bed board tiles for 401 and 403 animate amber→pulsing (housekeeping en route)
+
+Card 2 — URGENT (red):
+- Title: "Notify 3 South Charge Nurse to initiate Mrs. Garcia discharge — Room 310"
+- Rationale: "All discharge criteria met except transport. Clearing this room unlocks 2 ED placements within 90 minutes."
+- Owner: Bed Coordinator → 3 South Nurse | Time: Act within 30 min
+- Reasoning drawer: "Labs returned 1:35am ✓ | Family confirmed present 1:52am ✓ | Physician sign-off received 1:44am ✓ | Transport: not yet arranged ✗"
+- Updates when Nurse confirms: Title becomes "3 South confirmed: transport arranged for Room 310. Discharge initiated. Room ETA 35 min. Mr. Torres assignment on track."
+
+Card 3 — SOON (amber):
+- Title: "Tentatively assign Mr. Torres (ED, 4.1hr wait, telemetry) to Room 401, 4 North — pending bed clearance"
+- Rationale: "Room 401 is the best match for his telemetry requirement. ETA clear: 30–40 minutes based on housekeeping queue."
+- Owner: Bed Coordinator | Time: Confirm within 45 min
+- Reasoning drawer: "Mr. Torres wait time: 4.1 hrs ✓ (longest wait) | Telemetry requirement: Room 401 equipped ✓ | Room 401 ETA: 30–40 min post-housekeeping ✓"
+
+**Action Cards — Charge Nurse, 3 South (TC1):**
+
+Card 1 — URGENT (red):
+- Title: "Arrange transport for Mrs. Garcia, Room 310. Confirm discharge initiated."
+- Rationale: "Transport is the only outstanding item. Coordinator has flagged this as the hospital's top priority. An incoming ED admit is waiting on this room."
+- Owner: Charge Nurse — 3 South | Time: Act now
+- Buttons: **Confirm** (replaces Done — marks transport arranged and discharge initiated) | **Flag Blocker**
+- On Confirm: Coordinator's Card 2 updates as described above. Bed board Room 310 transitions blue→green→red (discharge → cleaning → assigned).
+
+**Discharge List — TC1 (top rows):**
+
+| Room | Patient | Floor | Likelihood | Blocker | LOS |
+|---|---|---|---|---|---|
+| 310 | Mrs. Garcia | 3 South | HIGH | Transport not arranged | Day 4 |
+| 214 | Mr. Hoffman | 2 East | MEDIUM | Awaiting physician sign-off | Day 6 |
+| 318 | Mrs. Obi | 3 South | MEDIUM | Family not yet present | Day 3 |
+| 401 | — | 4 North | — | Dirty (housekeeping) | — |
+| 403 | — | 4 North | — | Dirty (housekeeping) | — |
+| 112 | Mr. Nguyen | 1 West | LOW | Labs pending | Day 2 |
+
+---
+
+### TC2 — "The Morning Surge" (7:45am)
+
+**Hospital state:**
+- Total beds: 120 staffed
+- Occupied: 107 (89%)
+- ED boarders: 2 (Mr. Walsh 1.6hr, Ms. Rivera 1.1hr)
+- Elective surgical admits arriving 9am–noon: 8 patients (Mr. Alvarez 9:15am, Ms. Park 9:30am, Mr. Chen 10:00am, Mrs. Okafor 10:15am, Mr. Singh 10:45am, Ms. Torres 11:00am, Mr. Williams 11:30am, Mrs. Patel 11:45am)
+- Post-op patients coming to med-surg by 1pm: 3
+- Near-discharge (high confidence): Mrs. Johnson, Room 412, 4 North — labs back, family present, transport not arranged — BUT family has just requested physician consult
+- Physician sign-off bottleneck: Dr. Hendricks has not signed off on Rooms 412 (4 North) and 305 (3 South). Dr. Okafor has not signed off on Room 218 (2 East).
+
+**AI Situation Briefing — Coordinator:**
+> "As of 7:45am, the house is at 89% occupancy — but you're projected 3 beds short by 11am based on current discharge trajectory. The bottleneck is physician sign-off: 3 of your 5 most likely discharges are waiting on Dr. Hendricks and Dr. Okafor across different floors. You have 90 minutes to act before your first elective surgical admits begin arriving. See action queue."
+
+**AI Situation Briefing — Charge Nurse (4 North):**
+> "As of 7:45am, 4 North has 2 patients flagged for likely discharge before 10am. Room 412 (Mrs. Johnson) is your highest-confidence discharge — labs back, family present — but the family has just requested a physician consult before leaving. Room 408 (Mr. Patel) is pending Dr. Hendricks' sign-off. The Coordinator has a tentative elective surgical admit assigned to Room 412 for 10:30am. Confirm discharge is on track or flag a blocker."
+
+**Action Cards — Coordinator (TC2):**
+
+Card 1 — URGENT (red):
+- Title: "3 of your top 5 discharges are blocked by physician sign-off — page Dr. Hendricks and Dr. Okafor now"
+- Rationale: "Dr. Hendricks: Rooms 412 and 305. Dr. Okafor: Room 218. Clearing all 3 unlocks 3 beds before 10am — critical for the 9am surgical wave."
+- Owner: Bed Coordinator | Time: Act within 30 min
+- Reasoning drawer: "Room 412 (Mrs. Johnson): labs ✓ family ✓ sign-off ✗ | Room 305 (Mr. Reyes): labs ✓ transport ✓ sign-off ✗ | Room 218 (Ms. Nakamura): labs ✓ family ✓ sign-off ✗ | Pattern: same bottleneck across 3 floors ✓"
+- Updates when Nurse flags Room 412: Title becomes "Room 412 discharge delayed — family requesting physician consult. 10:30am admit assignment at risk. Recommend reassigning to Room 418, 3 North (confirmed clear by 9:45am)."
+
+Card 2 — SOON (amber):
+- Title: "Stage Mr. Alvarez (elective surgical, 9:15am) to Overflow Unit B — insufficient bed confidence for original assignment"
+- Rationale: "Room 412 (original assignment) discharge timeline is uncertain. Overflow Unit B is available and appropriate for his procedure type."
+- Owner: Bed Coordinator | Time: Decide within 20 min
+- Reasoning drawer: "Mr. Alvarez admit time: 9:15am ✓ | Original assignment Room 412: discharge confidence LOW given sign-off pending ✗ | Overflow Unit B: available, procedure-appropriate ✓"
+
+Card 3 — INFORMATIONAL (green):
+- Title: "Post-op placements (3 patients, ETA 1pm): Rooms 214, 318, and 116 are your best matches"
+- Rationale: "All three are projected clear before noon based on current discharge trajectory."
+- Owner: Bed Coordinator | Time: Confirm by 11am
+- Reasoning drawer: "Room 214 (Mr. Hoffman): discharge HIGH confidence, ETA 10:30am ✓ | Room 318 (Mrs. Obi): discharge HIGH confidence, ETA 11am ✓ | Room 116 (Mr. Grant): discharge MEDIUM confidence, ETA 11:30am ✓"
+
+**Action Cards — Charge Nurse, 4 North (TC2):**
+
+Card 1 — URGENT (red):
+- Title: "Confirm Mrs. Johnson discharge on track — Room 412. Coordinator's 10:30am admit depends on this room."
+- Rationale: "Labs back, family present, transport not yet arranged. Physician sign-off is the only remaining item. Flag any blocker immediately."
+- Owner: Charge Nurse — 4 North | Time: Confirm within 15 min
+- Buttons: **Confirm** | **Flag Blocker**
+- On Flag Blocker: Opens inline text input pre-filled with "Family requesting physician consult before discharge." On submit: Coordinator's Card 1 updates to show the delay and Room 418 recommendation.
+
+**Discharge List — TC2 (top rows, with pattern highlight):**
+
+| Room | Patient | Floor | Likelihood | Blocker | LOS |
+|---|---|---|---|---|---|
+| 412 | Mrs. Johnson | 4 North | HIGH | Physician sign-off (Dr. Hendricks) | Day 5 |
+| 305 | Mr. Reyes | 3 South | HIGH | Physician sign-off (Dr. Hendricks) | Day 3 |
+| 218 | Ms. Nakamura | 2 East | HIGH | Physician sign-off (Dr. Okafor) | Day 4 |
+| 114 | Mrs. Flores | 1 West | MEDIUM | Transport not arranged | Day 6 |
+| 322 | Mr. Grant | 3 South | MEDIUM | Family not present | Day 2 |
+| 408 | Mr. Patel | 4 North | LOW | Labs pending | Day 3 |
+| 215 | Ms. Wong | 2 East | LOW | Awaiting PT clearance | Day 7 |
+
+Rows for Rooms 412, 305, and 218 get amber left borders. Pattern detection banner shows above the table.
+
+---
+
+## DEMO MODE — GUIDED OVERLAY
+
+When Demo Mode is active, render an overlay layer on top of the normal app:
+
+### Scenario Selection Modal
+Appears before loading any data. Two large cards:
+- 🌙 **"The 2am Crunch"** — ED Boarding Crisis | ~5 min | "Show reactive AI: clearing an ED backlog in real time"
+- ☀️ **"The Morning Surge"** — Elective Admissions & Discharge Planning | ~5 min | "Show predictive AI: preventing a bed crisis before it hits"
+
+Clicking a card loads the corresponding data state and starts the guided walkthrough at Step 1.
+
+### Demo Overlay UI
+- Thin persistent banner at top of screen (above the main top bar): scenario name + "Step X of 6" + progress bar (teal fill) + **Exit Demo** button
+- Call-out popover: floating card, ~320px wide, with a subtle drop shadow. Contains: step title, context paragraph (1–2 sentences), action prompt in bold, and Back/Next/Skip buttons.
+- Target highlighting: when a call-out is anchored to a UI element, that element gets a teal pulsing ring outline (CSS animation). When no specific element, popover floats center-screen.
+
+### TC1 Call-Out Steps:
+1. Anchor: AI Situation Briefing | "It's 2:15am. 94% occupancy, 6 ED boarders. The AI has already written a plain-English briefing — no dashboard, no analyst." | Action: "Read the briefing aloud. Then point to the stats bar."
+2. Anchor: Action Queue | "The AI surfaced exactly 3 priority actions — deliberately capped. No alert fatigue." | Action: "Walk through all 3 cards briefly. Don't click yet."
+3. Anchor: Card 2 | "Card 2 synthesized 4 data signals to find the one gap — transport." | Action: "Click Card 2 to expand the reasoning drawer. Point out: labs ✓, family ✓, transport ✗."
+4. Anchor: Persona switcher | "Same AI, same data — completely different view for the Charge Nurse." | Action: "Click the persona switcher. Select Charge Nurse — 3 South."
+5. Anchor: Nurse Card 1 | "One task. Last-mile execution the Coordinator can't do from the hospital-wide view." | Action: "Click Confirm. Then switch back to Bed Coordinator."
+6. Anchor: Card 2 (updated) | "Card 2 has updated automatically — no phone call, no manual check." | Action: "Point to the updated card. This is the feedback loop. Pause for questions."
+
+### TC2 Call-Out Steps:
+1. Anchor: AI Situation Briefing | "7:45am. The AI has already projected a 3-bed shortfall by 11am — before it happens." | Action: "Read the briefing. Emphasize '3 beds short by 11am.' Then navigate to Discharges."
+2. Anchor: Discharge list, top 3 rows | "Three of the top 5 likely discharges share the same blocker. Not 3 problems — 1 systemic bottleneck." | Action: "Point to the amber-highlighted rows. Ask: 'How would you spot this in Epic?' Then go back to Home."
+3. Anchor: Card 1 | "The AI turned the pattern into one action card — page two doctors. System-level, not room-level." | Action: "Read Card 1 aloud. Hit Done. Then walk through Card 2."
+4. Anchor: Persona switcher | "Meanwhile, the 4 North Charge Nurse has her own situation." | Action: "Switch to Charge Nurse — 4 North."
+5. Anchor: Nurse Card 1 | "She needs to flag a problem before it becomes a crisis for the Coordinator." | Action: "Click Flag Blocker. Submit the pre-filled note. Switch back to Coordinator."
+6. Anchor: AI Chat | "The card updated — but let's go further. Ask the AI directly." | Action: "Click Ask AI. Send the pre-filled question. Watch it reason in context."
+
+---
+
+## IMPORTANT IMPLEMENTATION NOTES
+
+1. **The AI chat must work live.** Every message must hit the real Claude API with the full system prompt including scenario data. Do not mock the chat responses.
+
+2. **All other AI content (briefings, action cards) is hardcoded.** Do not call the API for briefings or action cards — use the exact text from the DATA LAYER above. This ensures demo reliability.
+
+3. **The feedback loop is pure React state.** When the Nurse hits Confirm or Flag, update the shared state object. The Coordinator's view re-renders from that state. No API call needed for this.
+
+4. **Pre-fill the TC2 chat input.** When TC2 is active and the user navigates to Ask AI, pre-populate the input with: *"If 412 doesn't clear by 10:30, what are my options for the surgical admit?"* — editable, not locked.
+
+5. **Scenario switching resets all state** (action card states, flag text, chat history) except the active persona.
+
+6. **Keep the app to one page with React state managing navigation.** No React Router needed.
+
+7. **Do not show a loading spinner for action cards or briefings** — they are hardcoded and should appear instantly.
+
+8. **Show a typing indicator for the AI chat** while waiting for the API response.
+
+9. **The bed board animation** (amber→pulsing when housekeeping dispatched) should trigger when Card 1 in TC1 is marked Done, regardless of which screen the user is on. When they navigate to Beds, the animation should already be running.
+
+10. **Error handling for the API:** If the Claude API call fails, show a subtle error message in the chat: "Unable to reach AI — check your API key in Replit Secrets." Do not crash the app.
+
+---
+
+*Build prompt finalized March 2026. This is a demo prototype, not a production application.*
