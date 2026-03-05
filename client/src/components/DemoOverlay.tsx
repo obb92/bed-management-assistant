@@ -1,109 +1,108 @@
 
 import { useEffect, useState, useRef } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ArrowDown, ArrowUp, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/context/AppContext";
-import { SCENARIOS } from "@/lib/data";
 
 interface DemoStep {
   title: string;
-  context: string;
-  action: string;
+  body: string;
   targetTestId?: string;
   navigateTo?: string;
+  pointerDir?: "down" | "up" | "left";
 }
 
 const TC1_STEPS: DemoStep[] = [
   {
     title: "AI Situation Briefing",
-    context: "It's 2:15am. 94% occupancy, 6 ED boarders. The AI has already written a plain-English briefing — no dashboard, no analyst.",
-    action: "Read the briefing aloud. Then point to the stats bar.",
+    body: "It's 2:15am. The house is at 94% occupancy with 6 ED boarders — 3 waiting over 4 hours. The Bed Coordinator opens CareFlow and gets an instant plain-English briefing. No dashboard. No analyst needed.",
     targetTestId: "ai-briefing",
     navigateTo: "home",
+    pointerDir: "down",
   },
   {
-    title: "Action Queue",
-    context: "The AI surfaced exactly 3 priority actions — deliberately capped. No alert fatigue.",
-    action: "Walk through all 3 cards briefly. Don't click yet.",
+    title: "Priority Action Queue",
+    body: "The AI has surfaced exactly 3 priority actions — ranked by urgency and impact. Deliberately capped at 3. This is a design choice: no alert fatigue. Each card tells you what to do, who owns it, and why.",
     targetTestId: "action-queue",
     navigateTo: "home",
+    pointerDir: "down",
   },
   {
-    title: "Card 2 — Reasoning Drawer",
-    context: "Card 2 synthesized 4 data signals to find the one gap — transport.",
-    action: "Click Card 2 to expand the reasoning drawer. Point out: labs ✓, family ✓, transport ✗.",
+    title: "AI Reasoning",
+    body: "Card 2 recommends initiating Mrs. Garcia's discharge on 3 South. The AI synthesized 4 data signals to reach this — labs back, family present, physician sign-off received, transport not yet arranged. Click the card to see the reasoning.",
     targetTestId: "action-card-tc1-coord-2",
     navigateTo: "home",
+    pointerDir: "left",
   },
   {
-    title: "Persona Switcher",
-    context: "Same AI, same data — completely different view for the Charge Nurse.",
-    action: 'Click the persona switcher. Select "Charge Nurse — 3 South".',
+    title: "The Charge Nurse View",
+    body: "The same AI — completely different view. The Charge Nurse on 3 South only sees her floor, with one specific task waiting for her. Switch to her perspective using the persona switcher.",
     targetTestId: "persona-switcher",
     navigateTo: "home",
+    pointerDir: "up",
   },
   {
-    title: "Nurse Card — One Task",
-    context: "One task. Last-mile execution the Coordinator can't do from the hospital-wide view.",
-    action: "Click Confirm. Then switch back to Bed Coordinator.",
+    title: "Last-Mile Execution",
+    body: "The Charge Nurse has one task: arrange transport for Mrs. Garcia and confirm discharge. This is the execution the Coordinator can't do from the hospital-wide view. She confirms it here.",
     targetTestId: "action-card-tc1-nurse-south-1",
     navigateTo: "home",
+    pointerDir: "left",
   },
   {
     title: "The Feedback Loop",
-    context: "Card 2 has updated automatically — no phone call, no manual check.",
-    action: "Point to the updated card. This is the feedback loop. Pause for questions.",
+    body: "Card 2 has updated automatically. The Coordinator now knows transport is arranged and Mr. Torres's assignment is on track — no phone call, no manual check. The AI closed the loop between Coordinator and Nurse.",
     targetTestId: "action-card-tc1-coord-2",
     navigateTo: "home",
+    pointerDir: "left",
   },
 ];
 
 const TC2_STEPS: DemoStep[] = [
   {
-    title: "AI Situation Briefing",
-    context: "7:45am. The AI has already projected a 3-bed shortfall by 11am — before it happens.",
-    action: "Read the briefing. Emphasize '3 beds short by 11am.' Then navigate to Discharges.",
-    targetTestId: "ai-briefing",
+    title: "Predictive Briefing",
+    body: "It's 7:45am. 8 elective surgical admits arrive in 90 minutes. The AI has already projected a 3-bed shortfall by 11am — not because the hospital is full now, but because discharge bottlenecks will compound. Navigate to the Discharge List to see why.",
+    targetTestId: "nav-discharges",
     navigateTo: "home",
+    pointerDir: "left",
   },
   {
     title: "Pattern Detection",
-    context: "Three of the top 5 likely discharges share the same blocker. Not 3 problems — 1 systemic bottleneck.",
-    action: "Point to the amber-highlighted rows. Ask: 'How would you spot this in Epic?' Then go back to Home.",
+    body: "12 patients are flagged as potential discharges today. Three of the top 5 share the exact same blocker: physician sign-off. Not 3 separate problems — 1 systemic bottleneck. The AI has already identified it.",
     targetTestId: "discharge-table",
     navigateTo: "discharges",
+    pointerDir: "down",
   },
   {
-    title: "Card 1 — System Action",
-    context: "The AI turned the pattern into one action card — page two doctors. System-level, not room-level.",
-    action: "Read Card 1 aloud. Hit Done. Then walk through Card 2.",
+    title: "System-Level Action",
+    body: "Back on Home, the AI has turned the pattern into a single action card: page Dr. Hendricks and Dr. Okafor directly. Not room-by-room. One intervention that unlocks 3 beds before 10am.",
     targetTestId: "action-card-tc2-coord-1",
     navigateTo: "home",
+    pointerDir: "left",
   },
   {
-    title: "Persona Switcher",
-    context: "Meanwhile, the 4 North Charge Nurse has her own situation.",
-    action: 'Switch to "Charge Nurse — 4 North".',
+    title: "The Charge Nurse View",
+    body: "Meanwhile, the Charge Nurse on 4 North has her own situation. Mrs. Johnson in Room 412 is a high-confidence discharge — but something has just come up.",
     targetTestId: "persona-switcher",
     navigateTo: "home",
+    pointerDir: "up",
   },
   {
-    title: "Flag Blocker",
-    context: "She needs to flag a problem before it becomes a crisis for the Coordinator.",
-    action: "Click Flag Blocker. Submit the pre-filled note. Switch back to Coordinator.",
+    title: "Flagging a Blocker",
+    body: "The Nurse's task is to confirm Mrs. Johnson's discharge. But the family has just requested a physician consult. She flags it — so the Coordinator can reroute the incoming admit before it becomes a crisis.",
     targetTestId: "action-card-tc2-nurse-north-1",
     navigateTo: "home",
+    pointerDir: "left",
   },
   {
-    title: "Ask AI Directly",
-    context: "The card updated — but let's go further. Ask the AI directly.",
-    action: "Click Ask AI. Send the pre-filled question. Watch it reason in context.",
-    targetTestId: "chat-input",
-    navigateTo: "chat",
+    title: "Live AI Reasoning",
+    body: "The Coordinator's card has already updated with a rerouting recommendation. Now ask the AI directly — it will answer in context, referencing actual room numbers and timing from the current hospital state.",
+    targetTestId: "nav-chat",
+    navigateTo: "home",
+    pointerDir: "left",
   },
 ];
 
-function useHighlight(testId: string | undefined) {
+function useHighlightRect(testId: string | undefined) {
   const [rect, setRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
@@ -122,6 +121,42 @@ function useHighlight(testId: string | undefined) {
   }, [testId]);
 
   return rect;
+}
+
+function PointerArrow({ rect, dir }: { rect: DOMRect; dir: "down" | "up" | "left" }) {
+  let style: React.CSSProperties = {};
+  let Icon = ArrowDown;
+
+  if (dir === "down") {
+    style = {
+      top: rect.top - 44,
+      left: rect.left + rect.width / 2 - 12,
+    };
+    Icon = ArrowDown;
+  } else if (dir === "up") {
+    style = {
+      top: rect.bottom + 8,
+      left: rect.left + rect.width / 2 - 12,
+    };
+    Icon = ArrowUp;
+  } else if (dir === "left") {
+    style = {
+      top: rect.top + rect.height / 2 - 12,
+      left: rect.right + 10,
+    };
+    Icon = ArrowLeft;
+  }
+
+  return (
+    <div
+      className="fixed z-[162] pointer-events-none animate-bounce"
+      style={style}
+    >
+      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-[#00d4c8] shadow-lg shadow-[#00d4c8]/40">
+        <Icon className="w-4 h-4 text-[#0a0f1e]" />
+      </div>
+    </div>
+  );
 }
 
 export function ScenarioModal() {
@@ -186,11 +221,11 @@ export function ScenarioModal() {
 }
 
 export function DemoOverlay() {
-  const { demoMode, demoStep, setDemoStep, exitDemo, scenario, setScreen, setPersona } = useApp();
+  const { demoMode, demoStep, setDemoStep, exitDemo, scenario, setScreen } = useApp();
   const steps = scenario === "TC1" ? TC1_STEPS : TC2_STEPS;
   const step = steps[demoStep - 1];
   const totalSteps = steps.length;
-  const highlightRect = useHighlight(step?.targetTestId);
+  const highlightRect = useHighlightRect(step?.targetTestId);
 
   useEffect(() => {
     if (step?.navigateTo) {
@@ -201,6 +236,7 @@ export function DemoOverlay() {
   if (!demoMode || !step) return null;
 
   const progress = (demoStep / totalSteps) * 100;
+  const scenarioName = scenario === "TC1" ? "The 2am Crunch" : "The Morning Surge";
 
   const next = () => {
     if (demoStep < totalSteps) setDemoStep(demoStep + 1);
@@ -211,10 +247,9 @@ export function DemoOverlay() {
     if (demoStep > 1) setDemoStep(demoStep - 1);
   };
 
-  const scenarioName = scenario === "TC1" ? "The 2am Crunch" : "The Morning Surge";
-
   return (
     <>
+      {/* Top banner */}
       <div className="fixed top-0 left-0 right-0 z-[150] h-9 bg-[#0a0f1e] border-b border-white/10 flex items-center gap-4 px-4">
         <div className="w-2 h-2 rounded-full bg-[#00d4c8] animate-pulse shrink-0" />
         <span className="text-white/70 text-xs font-medium shrink-0">Demo: {scenarioName}</span>
@@ -234,6 +269,7 @@ export function DemoOverlay() {
         </button>
       </div>
 
+      {/* Highlight ring */}
       {highlightRect && (
         <div
           className="fixed z-[140] pointer-events-none"
@@ -248,22 +284,29 @@ export function DemoOverlay() {
         </div>
       )}
 
+      {/* Pointer arrow */}
+      {highlightRect && step.pointerDir && (
+        <PointerArrow rect={highlightRect} dir={step.pointerDir} />
+      )}
+
+      {/* Callout card */}
       <div
-        className="fixed z-[160] w-80 bg-[#0f1629] border border-white/15 rounded-xl shadow-2xl p-5"
-        style={{
-          bottom: "2rem",
-          right: "2rem",
-        }}
+        className="fixed z-[160] w-[320px] bg-[#0f1629] border border-white/15 rounded-xl shadow-2xl p-5"
+        style={{ bottom: "2rem", right: "2rem" }}
         data-testid="demo-callout"
       >
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-[#00d4c8] text-[10px] font-bold uppercase tracking-widest">Step {demoStep} of {totalSteps}</span>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[#00d4c8] text-[10px] font-bold uppercase tracking-widest">
+            Step {demoStep} of {totalSteps}
+          </span>
+          <button onClick={exitDemo} className="text-white/20">
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
-        <h3 className="text-white font-bold text-sm mb-1.5">{step.title}</h3>
-        <p className="text-white/60 text-xs leading-relaxed mb-3">{step.context}</p>
-        <p className="text-[#00d4c8] text-xs font-semibold leading-relaxed border-t border-white/8 pt-3 mb-4">
-          {step.action}
-        </p>
+
+        <h3 className="text-white font-bold text-sm mb-2">{step.title}</h3>
+        <p className="text-white/60 text-xs leading-relaxed mb-5">{step.body}</p>
+
         <div className="flex items-center gap-2">
           <Button
             size="sm"
@@ -281,12 +324,9 @@ export function DemoOverlay() {
             className="flex-1 bg-[#00d4c8] text-[#0a0f1e] font-bold h-7 text-xs"
             data-testid="button-demo-next"
           >
-            {demoStep === totalSteps ? "Finish" : "Next"}
+            {demoStep === totalSteps ? "End Demo" : "Next"}
             {demoStep < totalSteps && <ChevronRight className="w-3 h-3 ml-1" />}
           </Button>
-          <button onClick={exitDemo} className="text-white/20 text-xs">
-            Skip
-          </button>
         </div>
       </div>
     </>
