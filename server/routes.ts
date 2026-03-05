@@ -8,10 +8,10 @@ export async function registerRoutes(
 ): Promise<Server> {
   app.post("/api/chat", async (req, res) => {
     const { messages, systemPrompt } = req.body;
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      return res.status(400).json({ error: "ANTHROPIC_API_KEY not configured in Replit Secrets." });
+      return res.status(400).json({ error: "VITE_ANTHROPIC_API_KEY not configured in Replit Secrets." });
     }
 
     try {
