@@ -9,6 +9,9 @@ interface DemoStep {
   body: string;
   targetTestId?: string;
   navigateTo?: string;
+  personaTo?: string;
+  autoNurseConfirm?: boolean;
+  autoNurseFlag?: boolean;
   pointerDir?: "down" | "up" | "left";
 }
 
@@ -46,6 +49,7 @@ const TC1_STEPS: DemoStep[] = [
     body: "The Charge Nurse has one task: arrange transport for Mrs. Garcia and confirm discharge. This is the execution the Coordinator can't do from the hospital-wide view. She confirms it here.",
     targetTestId: "action-card-tc1-nurse-south-1",
     navigateTo: "home",
+    personaTo: "nurse-3south",
     pointerDir: "left",
   },
   {
@@ -53,6 +57,8 @@ const TC1_STEPS: DemoStep[] = [
     body: "Card 2 has updated automatically. The Coordinator now knows transport is arranged and Mr. Torres's assignment is on track — no phone call, no manual check. The AI closed the loop between Coordinator and Nurse.",
     targetTestId: "action-card-tc1-coord-2",
     navigateTo: "home",
+    personaTo: "coordinator",
+    autoNurseConfirm: true,
     pointerDir: "left",
   },
 ];
@@ -91,6 +97,7 @@ const TC2_STEPS: DemoStep[] = [
     body: "The Nurse's task is to confirm Mrs. Johnson's discharge. But the family has just requested a physician consult. She flags it — so the Coordinator can reroute the incoming admit before it becomes a crisis.",
     targetTestId: "action-card-tc2-nurse-north-1",
     navigateTo: "home",
+    personaTo: "nurse-4north",
     pointerDir: "left",
   },
   {
@@ -98,6 +105,8 @@ const TC2_STEPS: DemoStep[] = [
     body: "The Coordinator's card has already updated with a rerouting recommendation. Now ask the AI directly — it will answer in context, referencing actual room numbers and timing from the current hospital state.",
     targetTestId: "nav-chat",
     navigateTo: "home",
+    personaTo: "coordinator",
+    autoNurseFlag: true,
     pointerDir: "left",
   },
 ];
@@ -221,7 +230,7 @@ export function ScenarioModal() {
 }
 
 export function DemoOverlay() {
-  const { demoMode, demoStep, setDemoStep, exitDemo, scenario, setScreen } = useApp();
+  const { demoMode, demoStep, setDemoStep, exitDemo, scenario, setScreen, setPersona, nurseConfirm, nurseFlag } = useApp();
   const steps = scenario === "TC1" ? TC1_STEPS : TC2_STEPS;
   const step = steps[demoStep - 1];
   const totalSteps = steps.length;
@@ -230,6 +239,15 @@ export function DemoOverlay() {
   useEffect(() => {
     if (step?.navigateTo) {
       setScreen(step.navigateTo as any);
+    }
+    if (step?.personaTo) {
+      setPersona(step.personaTo as any);
+    }
+    if (step?.autoNurseConfirm) {
+      nurseConfirm();
+    }
+    if (step?.autoNurseFlag) {
+      nurseFlag("Family requesting physician consult before discharge.");
     }
   }, [demoStep, scenario]);
 

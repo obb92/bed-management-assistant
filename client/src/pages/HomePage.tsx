@@ -75,36 +75,40 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
     <div
       className={`rounded-md border overflow-hidden transition-all ${
         shouldShowUpdated
-          ? "border-[#00d4c8]/40 bg-[#00d4c8]/5"
+          ? "border-emerald-200 bg-emerald-50"
           : "border-gray-100 bg-white"
       }`}
       data-testid={`action-card-${card.id}`}
     >
       <div className="flex">
-        <div className={`w-1 shrink-0 ${urgencyBar[card.urgency]}`} />
+        <div className={`w-1 shrink-0 ${shouldShowUpdated ? "bg-emerald-500" : urgencyBar[card.urgency]}`} />
         <div className="flex-1 min-w-0">
           <button
             className="w-full text-left px-4 pt-3 pb-2"
-            onClick={() => setExpanded((v) => !v)}
+            onClick={() => !shouldShowUpdated && setExpanded((v) => !v)}
           >
             <div className="flex items-start gap-2 justify-between">
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-bold leading-snug ${shouldShowUpdated ? "text-[#00d4c8]" : "text-[#0a0f1e]"}`}>
+                <p className="text-sm font-bold leading-snug text-[#0a0f1e]">
                   {displayTitle}
                 </p>
-                <p className="text-xs text-[#6b7280] mt-1 leading-relaxed">{card.rationale}</p>
-              </div>
-              <div className="shrink-0 ml-2 mt-0.5">
-                {expanded ? (
-                  <ChevronUp className="w-4 h-4 text-[#0a0f1e]/30" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-[#0a0f1e]/30" />
+                {!shouldShowUpdated && (
+                  <p className="text-xs text-[#6b7280] mt-1 leading-relaxed">{card.rationale}</p>
                 )}
               </div>
+              {!shouldShowUpdated && (
+                <div className="shrink-0 ml-2 mt-0.5">
+                  {expanded ? (
+                    <ChevronUp className="w-4 h-4 text-[#0a0f1e]/30" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-[#0a0f1e]/30" />
+                  )}
+                </div>
+              )}
             </div>
           </button>
 
-          {expanded && (
+          {expanded && !shouldShowUpdated && (
             <div className="px-4 pb-3">
               <div className="border-t border-gray-100 pt-3 space-y-1.5">
                 {card.reasoningItems.map((item, i) => (
@@ -156,9 +160,16 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
           )}
 
           <div className="px-4 pb-3 flex flex-wrap items-center gap-2">
-            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-sm ${urgencyBadge[card.urgency]}`}>
-              {urgencyLabel[card.urgency]}
-            </span>
+            {shouldShowUpdated ? (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm text-emerald-700 bg-emerald-100 flex items-center gap-1">
+                <Check className="w-2.5 h-2.5" />
+                Resolved
+              </span>
+            ) : (
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-sm ${urgencyBadge[card.urgency]}`}>
+                {urgencyLabel[card.urgency]}
+              </span>
+            )}
             <span className="text-[10px] text-[#0a0f1e] bg-gray-100 px-1.5 py-0.5 rounded-sm">{card.owner}</span>
             <span className="text-[10px] text-[#6b7280] flex items-center gap-1">
               <Clock className="w-2.5 h-2.5" />
