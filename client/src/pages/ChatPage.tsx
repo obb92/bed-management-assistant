@@ -10,6 +10,21 @@ interface Message {
   content: string;
 }
 
+function renderMarkdown(text: string): string {
+  return text
+    .split(/\n\n+/)
+    .map((para) => {
+      const html = para
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\n/g, "<br>");
+      return `<p style="margin:0 0 0.5em 0">${html}</p>`;
+    })
+    .join("");
+}
+
 function buildSystemPrompt(scenario: string, persona: string, scenarioData: object, time: string): string {
   const personaLabel =
     persona === "coordinator"
@@ -129,7 +144,10 @@ export function ChatPage() {
                   <Sparkles className="w-3 h-3 text-[#00d4c8]" />
                   <span className="text-[10px] font-bold text-[#00d4c8] uppercase tracking-wider">CareFlow AI</span>
                 </div>
-                <p className="text-[#0a0f1e] text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                <div
+                  className="text-[#0a0f1e] text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
+                />
               </div>
             )}
           </div>
