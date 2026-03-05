@@ -39,9 +39,9 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
   };
 
   const urgencyBadge: Record<string, string> = {
-    urgent: "text-red-400 bg-red-500/15",
-    soon: "text-amber-400 bg-amber-500/15",
-    informational: "text-emerald-400 bg-emerald-500/15",
+    urgent: "text-red-600 bg-red-50",
+    soon: "text-amber-600 bg-amber-50",
+    informational: "text-emerald-600 bg-emerald-50",
   };
 
   let displayTitle = card.title;
@@ -55,18 +55,18 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
 
   if (isDone) {
     return (
-      <div className="flex items-center gap-3 px-4 py-3 bg-emerald-500/5 border border-emerald-500/20 rounded-md opacity-60">
-        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-        <span className="text-sm text-white/50 line-through">{displayTitle}</span>
+      <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-100 rounded-md opacity-70">
+        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+        <span className="text-sm text-[#0a0f1e]/50 line-through">{displayTitle}</span>
       </div>
     );
   }
 
   if (isSnoozed) {
     return (
-      <div className="flex items-center gap-3 px-4 py-3 bg-white/3 border border-white/8 rounded-md opacity-50">
-        <Clock className="w-4 h-4 text-white/30 shrink-0" />
-        <span className="text-sm text-white/40 italic">{displayTitle} (snoozed)</span>
+      <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-100 rounded-md opacity-60">
+        <Clock className="w-4 h-4 text-[#0a0f1e]/30 shrink-0" />
+        <span className="text-sm text-[#0a0f1e]/40 italic">{displayTitle} (snoozed)</span>
       </div>
     );
   }
@@ -76,7 +76,7 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
       className={`rounded-md border overflow-hidden transition-all ${
         shouldShowUpdated
           ? "border-[#00d4c8]/40 bg-[#00d4c8]/5"
-          : "border-white/10 bg-white/3"
+          : "border-gray-100 bg-white"
       }`}
       data-testid={`action-card-${card.id}`}
     >
@@ -89,16 +89,16 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
           >
             <div className="flex items-start gap-2 justify-between">
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold leading-snug ${shouldShowUpdated ? "text-[#00d4c8]" : "text-white"}`}>
+                <p className={`text-sm font-bold leading-snug ${shouldShowUpdated ? "text-[#00d4c8]" : "text-[#0a0f1e]"}`}>
                   {displayTitle}
                 </p>
-                <p className="text-xs text-white/50 mt-1 leading-relaxed">{card.rationale}</p>
+                <p className="text-xs text-[#6b7280] mt-1 leading-relaxed">{card.rationale}</p>
               </div>
               <div className="shrink-0 ml-2 mt-0.5">
                 {expanded ? (
-                  <ChevronUp className="w-4 h-4 text-white/30" />
+                  <ChevronUp className="w-4 h-4 text-[#0a0f1e]/30" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-white/30" />
+                  <ChevronDown className="w-4 h-4 text-[#0a0f1e]/30" />
                 )}
               </div>
             </div>
@@ -106,13 +106,13 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
 
           {expanded && (
             <div className="px-4 pb-3">
-              <div className="border-t border-white/8 pt-3 space-y-1.5">
+              <div className="border-t border-gray-100 pt-3 space-y-1.5">
                 {card.reasoningItems.map((item, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs">
-                    <span className={`shrink-0 mt-0.5 font-bold ${item.positive ? "text-emerald-400" : "text-red-400"}`}>
+                    <span className={`shrink-0 mt-0.5 font-bold ${item.positive ? "text-emerald-500" : "text-red-500"}`}>
                       {item.positive ? "✓" : "✗"}
                     </span>
-                    <span className="text-white/60">{item.text}</span>
+                    <span className="text-[#0a0f1e]">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -121,19 +121,19 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
 
           {flagMode && (
             <div className="px-4 pb-3">
-              <div className="border-t border-white/8 pt-3">
-                <p className="text-xs text-white/50 mb-2">Describe the blocker:</p>
+              <div className="border-t border-gray-100 pt-3">
+                <p className="text-xs text-[#6b7280] mb-2">Describe the blocker:</p>
                 <textarea
                   value={flagInput}
                   onChange={(e) => setFlagInput(e.target.value)}
                   rows={2}
-                  className="w-full bg-white/5 border border-white/15 rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-[#00d4c8]/50"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-sm text-[#0a0f1e] placeholder:text-gray-400 resize-none focus:outline-none focus:border-[#00d4c8]/50"
                   data-testid="input-flag-blocker"
                 />
                 <div className="flex gap-2 mt-2">
                   <Button
                     size="sm"
-                    className="bg-amber-500/20 text-amber-400 border border-amber-500/30 bg-transparent"
+                    className="bg-amber-500/20 text-amber-600 border border-amber-500/30 bg-transparent"
                     onClick={() => {
                       nurseFlag(flagInput);
                       setFlagMode(false);
@@ -146,7 +146,7 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
                     size="sm"
                     variant="ghost"
                     onClick={() => setFlagMode(false)}
-                    className="text-white/40"
+                    className="text-[#0a0f1e]/40"
                   >
                     Cancel
                   </Button>
@@ -159,8 +159,8 @@ function ActionCardComponent({ card, isNurseCard }: { card: ActionCard; isNurseC
             <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-sm ${urgencyBadge[card.urgency]}`}>
               {urgencyLabel[card.urgency]}
             </span>
-            <span className="text-[10px] text-white/40 bg-white/6 px-1.5 py-0.5 rounded-sm">{card.owner}</span>
-            <span className="text-[10px] text-white/40 flex items-center gap-1">
+            <span className="text-[10px] text-[#0a0f1e] bg-gray-100 px-1.5 py-0.5 rounded-sm">{card.owner}</span>
+            <span className="text-[10px] text-[#6b7280] flex items-center gap-1">
               <Clock className="w-2.5 h-2.5" />
               {card.timeLabel}
             </span>
