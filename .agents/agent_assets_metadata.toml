@@ -1,0 +1,20 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "7M2Rexpw524mbBLQn1LcL"
+uri = "file://screenshots/login.jpg"
+type = "image"
+title = "Login Page"
+
+[[outputs]]
+id = "RQGuOzia6NH2nYF_c8Cor"
+uri = "file://screenshots/home-actions.jpg"
+type = "image"
+title = "Home — AI Briefing & Priority Actions (TC1, Bed Coordinator)"
+
+[[outputs]]
+id = "BgmZEz5OzDOfFYkZiILlP"
+uri = "file://screenshots/bed-board.jpg"
+type = "image"
+title = "Bed Board — Floor-by-Floor Status (TC1)"
