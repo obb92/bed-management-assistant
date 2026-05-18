@@ -1,8 +1,15 @@
-# Bed Management Assistant Prototype
+# CareFlow
 
 An AI-powered bed management assistant for hospital **Bed Coordinators** and **Charge Nurses**. CareFlow monitors a synthetic hospital state and generates prioritized, plain-English action recommendations — telling staff exactly what to do and why, without requiring a dashboard analyst in the loop.
 
 > **This is a demo/portfolio prototype**, not a production application. All patient data is synthetic. The only live AI component is the chat interface.
+
+---
+
+## Screenshots
+
+![Home & Action Queue](screenshots/home-actions.jpg)
+![Bed Status Board](screenshots/bed-board.jpg)
 
 ---
 
